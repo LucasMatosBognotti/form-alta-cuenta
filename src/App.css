@@ -1,0 +1,21 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.formContent {
+  padding: 0 50px;
+  margin-top: 20px !important;
+  width: 70%;
+  margin-left: auto;
+  margin-right: auto;
+  width: 800px;
+}
+
+.centerContainer {
+  text-align: center;
+  margin-top: 50;
+  padding: 50;
+}
