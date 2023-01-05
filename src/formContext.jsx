@@ -18,6 +18,12 @@ const initialState = {
     vpcCustomDesc: null,
     subnetValue: null,
     alfred: false,
+
+    meliProjectId: null,
+    shieldId: null,
+    furyQuestion: null,
+    requestedBy: null,
+    
     accountServices: [],
     matchedQuestions: []
   },
@@ -28,7 +34,10 @@ const initialState = {
   setUrlDiagram: (urlDiagram) => null,
   setCoreMetrics: (coreMetrics) => null,
   setUserAffectation: (userAffectation) => null,
-  setUsers: (users) => null,
+  setUserName: (username, index) => null,
+  setUserRole: (role, index) => null,
+  addUser: (user) => null,
+  removeUser: (index) => null,
   setMeliInitiativeId: (meliInitiativeId) => null,
   setBastionTeam: (bastionTeam) => null,
   setVpcValue: (vpcValue) => null,
@@ -107,12 +116,47 @@ const reducer = (state, action) => {
           }
       }
 
-    case 'SET_USERS':
+    case 'SET_USER_USERNAME':
+      const newArrayUsername = [...state.form.users]
+      newArrayUsername[payload.index].username = payload.username
       return {
         ...state,
         form: {
           ...state.form,
-          users: payload.users
+          users: newArrayUsername
+        }
+      }
+
+    case 'SET_USER_ROLE':
+        const newArrayRole = [...state.form.users]
+        newArrayRole[payload.index].role = payload.role
+        return {
+          ...state,
+          form: {
+            ...state.form,
+            users: newArrayRole
+          }
+      }
+
+    case 'ADD_USER':
+      const addArray = [...state.form.users]
+      addArray.push(payload.user)
+      return {
+        ...state,
+        form: {
+          ...state.form,
+          users: addArray
+        }
+      }
+
+    case 'REMOVE_USER':
+      const removeArray = [...state.form.users]
+      removeArray.splice(payload.index, 1)
+      return {
+        ...state,
+        form: {
+          ...state.form,
+          users: removeArray
         }
       }
 
@@ -246,10 +290,31 @@ const FormProvider = ({ children }) => {
     })
   }
 
-  const setUsers = (users) => {
+  const setUserName = (username, index) => {
     dispatch({
-      type: 'SET_USERS',
-      payload: { users }
+      type: 'SET_USER_USERNAME',
+      payload: { username, index }
+    })
+  }
+
+  const setUserRole = (role, index) => {
+    dispatch({
+      type: 'SET_USER_ROLE',
+      payload: { role, index }
+    })
+  }
+
+  const addUser = (user) => {
+    dispatch({
+      type: 'ADD_USER',
+      payload: { user }
+    })
+  }
+
+  const removeUser = (index) => {
+    dispatch({
+      type: 'REMOVE_USER',
+      payload: { index }
     })
   }
 
@@ -320,7 +385,10 @@ const FormProvider = ({ children }) => {
     setUrlDiagram,
     setCoreMetrics,
     setUserAffectation,
-    setUsers,
+    setUserName,
+    setUserRole,
+    addUser,
+    removeUser,
     setMeliInitiativeId,
     setBastionTeam,
     setVpcValue,

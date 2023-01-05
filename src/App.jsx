@@ -64,6 +64,10 @@ function App() {
     setUrlDiagram,
     setCoreMetrics,
     setUserAffectation,
+    setUserName,
+    setUserRole,
+    addUser,
+    removeUser,
     setAccountServices,
     setMeliInitiativeId,
     setBastionTeam,
@@ -77,6 +81,8 @@ function App() {
 
   useEffect(() => {
     setTimeout(() => {
+      // 19
+      // 21
       const responseData = {
         "id": 1,
         "bastion_team": "BuyBox2",
@@ -100,8 +106,12 @@ function App() {
         "alfred": true,
         "users": [
           {
-            "username": "123",
+            "username": "Lucas",
             "role": "TECHNICAL"
+          },
+          {
+            "username": "Maria",
+            "role": "OWNER"
           }
         ]
       }
@@ -123,6 +133,12 @@ function App() {
         subnetValue: responseData.subnet_value,
         vpcCustomDesc: responseData.vpc_custom_desc,
         alfred: responseData.alfred,
+
+        meliProjectId: responseData.meli_project_id,
+        shieldId: responseData.shield_id,
+        furyQuestion: responseData.fury_question,
+        requestedBy: responseData.requested_by,
+
         matchedQuestions: responseData.resources.map(resource => {
           return {
             awsService: resource.name,
@@ -139,8 +155,45 @@ function App() {
   }, [])
 
   const handleSave = () => {
-    console.log(formRef.getFieldsValue())
-    console.log(form)
+    const resources = form.matchedQuestions
+      .concat(
+        form.accountServices.map(service => {
+          return {
+            awsService: service,
+            furyService: null,
+            question: null,
+            reason: null,
+          }
+        })
+      )
+      .filter((value, index, self) => index === self.findIndex((service) => (service.awsService === value.awsService)))
+      .map((service) => { return { name: service.awsService, reason: service.reason } })
+      
+    const requesBody = {
+        id: 1,
+        bastion_team: form.bastionTeam,
+        name: form.accountName,
+        description: form.accountDescription,
+        meli_initiative_id: form.meliInitiativeId,
+        meli_project_id: form.meliProjectId, // Falta
+        shield_id: form.shieldId, // Falta
+        core_metrics: form.coreMetrics,
+        resource: resources,
+        user_affectation: form.userAffectation,
+        type: form.accountType,
+        fury_question: form.furyQuestion, // Falta
+        requested_by: form.requestedBy, // Falta
+        vpc_value: form.vpcValue,
+        vpc_custom_desc: form.vpcCustomDesc,
+        subnet_value: form.subnetValue,
+        pii: form.accountPii,
+        provider: form.providerType,
+        users: form.users
+    }
+    
+    console.log(requesBody)
+
+
   }
 
   const verifyService = async (services) => {
@@ -165,7 +218,7 @@ function App() {
 
   const handleMatchedAnsware = (questionId, reasonValue) => {
     const matchedQuestions = [...form.matchedQuestions]
-    const question = matchedQuestions.find((question) => question.id === questionId)
+    const question = matchedQuestions.find((_, index) => index === questionId)
     question.reason = reasonValue
     setMatchedQuestions(matchedQuestions)
   }
@@ -303,7 +356,7 @@ function App() {
             
             {form.matchedQuestions && form.matchedQuestions.map((question, index) => (
               <Form.Item  style={{ marginBottom: 12, }} key={index} label={question.question} >
-                <Input placeholder='response' value={question.reason} onChange={(event) => handleMatchedAnsware(question.id, event.target.value)} />
+                <Input placeholder='response' value={question.reason} onChange={(event) => handleMatchedAnsware(index, event.target.value)} />
               </Form.Item>
             ))}
           </Card>
@@ -392,34 +445,31 @@ function App() {
                       <Row gutter={[4, 4]} key={field.key}>
                         <Col span={6} offset={6}>
                           <Form.Item
-                            {...formItemLayoutWithOutLabel}
+                            label="Username"
                             name={[field.name, 'username']}
-                            fieldKey={[field.fieldKey, 'username']}
+                            rules={[{ required: true, message: "'Role' is required" }]}
                           >
-                            <Input placeholder="Username LDAP" />
+                            <Input onChange={(event) => setUserName(event.target.value, field.key)} placeholder="Username LDAP" />
                           </Form.Item>
                         </Col>
 
                         <Col span={8}>
                           <Form.Item
                             name={[field.name, 'role']}
-                            fieldKey={[field.fieldKey, 'role']}
+                            {...layout}
+                            style={{ marginBottom: 12 }}
+                            label="Role"
+                            rules={[{ required: true, message: "'Role' is required" }]}
                           >
-                            <Select placeholder="Role">
+                            <Select onChange={(value) => setUserRole(value, field.key)} placeholder="Role">
                               <Select.Option value="OWNER">
-                                Owner{' '}
-                                <span className="select-option">
-                                  ( Access: Costs, Optmizations | Users: Approval requests )
-                                </span>
+                                OWNER
                               </Select.Option>
                               <Select.Option value="TECHNICAL">
-                                Technical{' '}
-                                <span className="select-option">
-                                  ( Access: Optmizations | Users: Approval requests )
-                                </span>
+                                TECHNICAL
                               </Select.Option>
                               <Select.Option value="USER">
-                                User <span className="select-option">( No Access )</span>
+                                USER
                               </Select.Option>
                             </Select>
                           </Form.Item>
@@ -430,6 +480,7 @@ function App() {
                             className="dynamic-delete-button"
                             onClick={() => {
                               remove(field.name);
+                              removeUser(field.key)
                             }}
                             style={{ color: 'red' }}
                           />
@@ -443,6 +494,7 @@ function App() {
                             type="dashed"
                             onClick={() => {
                               add();
+                              addUser({ username: "", role: ""})
                             }}
                             style={{ width: '100%' }}
                           >
