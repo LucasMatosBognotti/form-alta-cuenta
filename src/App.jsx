@@ -449,7 +449,7 @@ function App() {
                             name={[field.name, 'username']}
                             rules={[{ required: true, message: "'Role' is required" }]}
                           >
-                            <Input onChange={(event) => setUserName(event.target.value, field.key)} placeholder="Username LDAP" />
+                            <Input onChange={(event) => setUserName(event.target.value, field.name)} placeholder="Username LDAP" />
                           </Form.Item>
                         </Col>
 
@@ -461,7 +461,7 @@ function App() {
                             label="Role"
                             rules={[{ required: true, message: "'Role' is required" }]}
                           >
-                            <Select onChange={(value) => setUserRole(value, field.key)} placeholder="Role">
+                            <Select onChange={(value) => setUserRole(value, field.name)} placeholder="Role">
                               <Select.Option value="OWNER">
                                 OWNER
                               </Select.Option>
@@ -480,7 +480,7 @@ function App() {
                             className="dynamic-delete-button"
                             onClick={() => {
                               remove(field.name);
-                              removeUser(field.key)
+                              removeUser(field.name)
                             }}
                             style={{ color: 'red' }}
                           />
@@ -494,7 +494,7 @@ function App() {
                             type="dashed"
                             onClick={() => {
                               add();
-                              addUser({ username: "", role: ""})
+                              addUser({ username: null, role: null})
                             }}
                             style={{ width: '100%' }}
                           >
